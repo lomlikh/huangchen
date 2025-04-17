@@ -162,13 +162,11 @@
                 const res = await fetch(apiUrl);
                 if (!res.ok) throw new Error('获取文件列表失败');
                 const files = await res.json();
-                // 只处理主目录下的文件
-                const fileList = files.filter(item => item.type === 'file');
-                // 用于存储文件及其第一次提交时间
+                // 不再只筛选文件，文件和文件夹都处理
                 let fileCommitList = [];
-                for (const file of fileList) {
-                    // 获取该文件的第一次提交
-                    const commitsUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(file.path)}&per_page=1`;
+                for (const item of files) {
+                    // 获取该文件或文件夹的第一次提交
+                    const commitsUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(item.path)}&per_page=1`;
                     const resp = await fetch(commitsUrl);
                     if (!resp.ok) continue;
                     // 获取最后一页页码
@@ -179,7 +177,7 @@
                         if (match) lastPage = match[1];
                     }
                     // 请求最后一页
-                    const lastPageUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(file.path)}&per_page=1&page=${lastPage}`;
+                    const lastPageUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(item.path)}&per_page=1&page=${lastPage}`;
                     const lastResp = await fetch(lastPageUrl);
                     const lastCommits = await lastResp.json();
                     let firstDate = '未知';
@@ -189,7 +187,8 @@
                         firstDate = new Date(firstDateRaw).toLocaleString();
                     }
                     fileCommitList.push({
-                        name: file.name,
+                        name: item.name,
+                        type: item.type === 'dir' ? '文件夹' : '文件',
                         firstDate,
                         firstDateRaw
                     });
@@ -201,9 +200,9 @@
                     if (!b.firstDateRaw) return -1;
                     return new Date(a.firstDateRaw) - new Date(b.firstDateRaw);
                 });
-                let tableHTML = '<table border="1"><tr><th>文件名</th><th>第一次提交时间</th></tr>';
+                let tableHTML = '<table border="1"><tr><th>名称</th><th>类型</th><th>第一次提交时间</th></tr>';
                 for (const item of fileCommitList) {
-                    tableHTML += `<tr><td>${item.name}</td><td>${item.firstDate}</td></tr>`;
+                    tableHTML += `<tr><td>${item.name}</td><td>${item.type}</td><td>${item.firstDate}</td></tr>`;
                 }
                 tableHTML += '</table>';
                 document.getElementById('demo').innerHTML = tableHTML;
