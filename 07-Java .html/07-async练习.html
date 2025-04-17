@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《Web前端设计》课程学习记录</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #e6ecf3; /* 莫兰迪浅蓝灰 */
+        }
+        h1 {
+            color: #4a5a6a; /* 莫兰迪深蓝灰 */
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            text-align: center;
+            background-color: #f4f7fa; /* 莫兰迪淡蓝 */
+            box-shadow: 0 2px 8px rgba(74, 90, 106, 0.08);
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #b7c9d6; /* 莫兰迪蓝灰 */
+            color: #324052;
+        }
+        tr:nth-child(even) {
+            background-color: #dde6ee; /* 莫兰迪浅蓝 */
+        }
+        tr:nth-child(odd) {
+            background-color: #f4f7fa; /* 莫兰迪淡蓝 */
+        }
+        button {
+            padding: 8px 16px;
+            margin: 10px 5px;
+            background-color: #7a9eb1; /* 莫兰迪蓝 */
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 1px 4px rgba(74, 90, 106, 0.06);
+        }
+        button:hover {
+            background-color: #5b7a99; /* 深一点的莫兰迪蓝 */
+        }
+        #demo {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #b7c9d6;
+            border-radius: 5px;
+            background-color: #f4f7fa;
+            color: #324052;
+        }
+    </style>
+</head>
+<body>
+    <h1>《Web前端设计》课程学习记录</h1>
+    
+    <div>
+        <!-- 删除生成随机数按钮 -->
+        <button onclick="fetchAllPushDates()">获取GitHub提交记录</button>
+        <button onclick="fetchFilesFirstCommitDates()">获取每个文件的第一次提交时间</button>
+    </div>
+    
+    <div id="demo"></div>
+    
+    <script>
+        // 删除 getRandomInt 和 displayRandomInt 相关函数
+
+        // 计算从2025年3月3日（含）起是第几教学周
+        function getTeachingWeekNumber(dateStr) {
+            const firstMonday = new Date(2025, 2, 3); // 2025年3月3日
+            const date = new Date(dateStr);
+            if (date < firstMonday) return 0;
+            const diffDays = Math.floor((date - firstMonday) / (1000 * 60 * 60 * 24));
+            return Math.floor(diffDays / 7) + 1;
+        }
+
+        // 获取所有推送日期，并按教学周分组
+        async function fetchAllPushDates() {
+            document.getElementById('demo').textContent = '正在获取数据...';
+            const url = `https://api.github.com/repos/lomlikh/huangchen/commits`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('网络响应失败');
+                }
+                const commits = await response.json();
+                // 生成带有weekNum的数据对象数组
+                const pushData = commits.map(commit => {
+                    const dateStr = commit.commit.committer.date;
+                    const weekNum = getTeachingWeekNumber(dateStr);
+                    return {
+                        weekNum,
+                        weekLabel: weekNum > 0 ? `第${weekNum}周` : '第0周',
+                        dateStr: new Date(dateStr).toLocaleString(),
+                        rawDate: dateStr
+                    };
+                });
+
+                // 按教学周升序排序
+                pushData.sort((a, b) => a.weekNum - b.weekNum);
+
+                // 统计每个教学周的提交数据
+                const weekMap = {};
+                let maxWeekNum = 0;
+                for (const item of pushData) {
+                    if (item.weekNum > 0) {
+                        if (!weekMap[item.weekNum]) weekMap[item.weekNum] = [];
+                        weekMap[item.weekNum].push(item);
+                        if (item.weekNum > maxWeekNum) maxWeekNum = item.weekNum;
+                    }
+                }
+
+                // 至少显示前两周
+                maxWeekNum = Math.max(maxWeekNum, 2);
+
+                // 构建表格，合并教学周单元格
+                let tableHTML = '<table border="1" style="text-align:center;"><tr><th>教学周</th><th>本周是否有提交</th><th>推送日期</th></tr>';
+                for (let week = 1; week <= maxWeekNum; week++) {
+                    if (weekMap[week] && weekMap[week].length > 0) {
+                        // 有提交，合并单元格
+                        for (let i = 0; i < weekMap[week].length; i++) {
+                            tableHTML += '<tr>';
+                            if (i === 0) {
+                                tableHTML += `<td rowspan="${weekMap[week].length}">第${week}周</td>`;
+                                tableHTML += `<td>√</td><td>${weekMap[week][i].dateStr}</td>`;
+                            } else {
+                                tableHTML += `<td></td><td>${weekMap[week][i].dateStr}</td>`;
+                            }
+                            tableHTML += '</tr>';
+                        }
+                    } else {
+                        // 没有提交
+                        tableHTML += `<tr><td>第${week}周</td><td>×</td><td>×</td></tr>`;
+                    }
+                }
+                tableHTML += '</table>';
+                document.getElementById('demo').innerHTML = tableHTML;
+            } catch (error) {
+                console.error('获取数据时出错:', error);
+                document.getElementById('demo').textContent = `获取数据失败: ${error.message}`;
+            }
+        }
+
+        // 获取主目录下所有文件的第一次提交时间
+        async function fetchFilesFirstCommitDates() {
+            document.getElementById('demo').textContent = '正在获取文件列表...';
+            const owner = 'lomlikh';
+            const repo = 'huangchen';
+            const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/`;
+            try {
+                const res = await fetch(apiUrl);
+                if (!res.ok) throw new Error('获取文件列表失败');
+                const files = await res.json();
+                // 只处理主目录下的文件
+                const fileList = files.filter(item => item.type === 'file');
+                // 用于存储文件及其第一次提交时间
+                let fileCommitList = [];
+                for (const file of fileList) {
+                    // 获取该文件的第一次提交
+                    const commitsUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(file.path)}&per_page=1`;
+                    const resp = await fetch(commitsUrl);
+                    if (!resp.ok) continue;
+                    // 获取最后一页页码
+                    const link = resp.headers.get('Link');
+                    let lastPage = 1;
+                    if (link) {
+                        const match = link.match(/&page=(\d+)>; rel="last"/);
+                        if (match) lastPage = match[1];
+                    }
+                    // 请求最后一页
+                    const lastPageUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(file.path)}&per_page=1&page=${lastPage}`;
+                    const lastResp = await fetch(lastPageUrl);
+                    const lastCommits = await lastResp.json();
+                    let firstDate = '未知';
+                    let firstDateRaw = null;
+                    if (lastCommits.length > 0) {
+                        firstDateRaw = lastCommits[0].commit.committer.date;
+                        firstDate = new Date(firstDateRaw).toLocaleString();
+                    }
+                    fileCommitList.push({
+                        name: file.name,
+                        firstDate,
+                        firstDateRaw
+                    });
+                }
+                // 按时间从小到大排序（未知的排最后）
+                fileCommitList.sort((a, b) => {
+                    if (!a.firstDateRaw && !b.firstDateRaw) return 0;
+                    if (!a.firstDateRaw) return 1;
+                    if (!b.firstDateRaw) return -1;
+                    return new Date(a.firstDateRaw) - new Date(b.firstDateRaw);
+                });
+                let tableHTML = '<table border="1"><tr><th>文件名</th><th>第一次提交时间</th></tr>';
+                for (const item of fileCommitList) {
+                    tableHTML += `<tr><td>${item.name}</td><td>${item.firstDate}</td></tr>`;
+                }
+                tableHTML += '</table>';
+                document.getElementById('demo').innerHTML = tableHTML;
+            } catch (error) {
+                document.getElementById('demo').textContent = `获取数据失败: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
