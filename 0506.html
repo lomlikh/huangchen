@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支教网页布局</title>
+    <style>
+        #two #logo img {
+            width: 163px;
+            height: 108px;
+			float: left;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(120deg, #f9f9f9 60%, #e3f0ff 100%);
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(90deg, #007bff 60%, #0056b3 100%);
+            color: #fff;
+            padding: 22px 0 18px 0;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            letter-spacing: 2px;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        header a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 22px;
+            border-radius: 22px;
+            transition: background 0.2s, color 0.2s;
+            font-size: 1.08em;
+        }
+
+        header a:hover {
+            background: rgba(255,255,255,0.18);
+            color: #ffe082;
+        }
+
+        #two {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 36px 0 18px 0;
+            gap: 40px;
+        }
+
+        #logo img {
+            width: 163px;
+            height: 108px;
+            border-radius: 18px;
+            box-shadow: 0 4px 16px rgba(0,123,255,0.08);
+        }
+
+        .search-container {
+            margin-left: 40px;
+            width: 340px;
+        }
+
+        .search-box {
+            display: flex;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.04);
+            overflow: hidden;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: none;
+            font-size: 16px;
+            outline: none;
+            background: transparent;
+        }
+
+        .search-button {
+            padding: 0 28px;
+            border: none;
+            background: linear-gradient(90deg, #007bff 60%, #0056b3 100%);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 0 30px 30px 0;
+        }
+
+        .search-button:hover {
+            background: #0056b3;
+        }
+
+        .slider {
+            width: 90%;
+            max-width: 800px;
+            height: 380px;
+            margin: 36px auto 0 auto;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,123,255,0.08);
+            position: relative;
+            background: #fff;
+        }
+
+        .slider img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            border-radius: 18px;
+        }
+
+        .slider img.active {
+            display: block;
+        }
+
+        .slider button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 32px;
+            background: rgba(0,0,0,0.18);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            transition: background 0.2s;
+        }
+
+        .slider button:hover {
+            background: rgba(0,123,255,0.4);
+        }
+
+        .slider button.prev { left: 18px; }
+        .slider button.next { right: 18px; }
+
+        #content {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 48px;
+            margin: 48px auto 120px auto;
+            max-width: 1200px;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,123,255,0.06);
+            padding: 36px 32px;
+        }
+
+        #left {
+            flex: 1;
+            min-width: 320px;
+        }
+
+        #left .p1, #left .p2, #left .p3 {
+            margin-bottom: 32px;
+            background: #f1f8ff;
+            border-radius: 12px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.03);
+        }
+
+        #left h4 {
+            color: #007bff;
+            margin-bottom: 8px;
+        }
+
+        #right {
+            flex: 1.2;
+            min-width: 340px;
+            text-align: center;
+        }
+
+        #right .imag1 {
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.03);
+        }
+
+        #right img {
+            width: 80%;
+            max-width: 320px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #333 60%, #007bff 100%);
+            color: #fff;
+            text-align: center;
+            padding: 18px 0 10px 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.12);
+            font-size: 1em;
+            z-index: 100;
+        }
+
+        .footer .contact-info {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 6px;
+        }
+
+        .footer .contact-info div {
+            padding: 5px 16px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .footer .contact-info a {
+            color: #ffe082;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer .contact-info a:hover {
+            text-decoration: underline;
+            color: #fff;
+        }
+
+        .footer .copyright {
+            margin-top: 6px;
+            font-size: 0.95em;
+            color: #ffe082;
+        }
+
+        @media (max-width: 900px) {
+            #content {
+                flex-direction: column;
+                gap: 24px;
+                padding: 18px 8px;
+            }
+            #two {
+                flex-direction: column;
+                gap: 18px;
+                padding-left: 0;
+            }
+            .slider {
+                height: 220px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <header>
+        <div class="container">
+            <div class="nav-links">
+                <a href="真 主页面.html">首页</a>
+                <a href="心理疏导.html">心理疏导</a>
+                <a href="支教信息.html">支教信息</a>
+                <a href="夏令营.html">夏令营</a>
+                <a href="教案.html">教案专区</a>
+                <a href="个人营地.html">个人营地</a>
+                <a href="关于我们.html">关于我们</a>
+            </div>
+        </div>
+    </header>
+
+    <div id="two">
+        <div id="logo">
+            <img src="imgs/logo.jpg" alt="">
+        </div>
+
+        <div id="serchBar">
+            <div class="search-container">
+                <div class="search-box">
+					<form >
+                    <input type="text" class="search-input" placeholder="请输入搜索内容...">
+                    <button type="submit" class="search-button">搜索</button></form>
+					<script>
+					 function jumpToPage() {
+      const searchTerm = document.getElementById('search-input').value;
+      let targetPage = "真 主页面.html"; // 默认跳转页面
+
+      // 设定一些固定的关键词和对应的页面
+      if (searchTerm === "夏令营") {
+        targetPage = "夏令营.html";
+      } else if (searchTerm === "banana") {
+        targetPage = "banana_result.html";
+      }
+
+      window.关于我们.html = targetPage;
+    }
+  </script>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slider">
+    <img src="imgs/ctaxuanyan.jpg" alt="&lt;" class="active">
+    <img src="https://picsum.photos/500/300?random=2" alt="">
+    <img src="https://picsum.photos/500/300?random=3" alt="">
+<button class="prev">&lt;</button>
+    <button class="next">&gt;</button>
+    </div>
+	 <script>
+    const slider = document.querySelector('.slider');
+    const images = slider.querySelectorAll('img');
+    const prevButton = document.querySelector('.prev');
+    const nextButton = document.querySelector('.next');
+    let currentIndex = 0;
+
+    // 显示当前图片
+    function showImage(index) {
+      images.forEach((img, i) => {
+        if (i === index) {
+          img.classList.add('active');
+        } else {
+          img.classList.remove('active');
+        }
+      });
+    }
+
+    // 下一张图片
+    function nextImage() {
+      currentIndex = (currentIndex + 1) % images.length;
+      showImage(currentIndex);
+    }
+
+    // 上一张图片
+    function prevImage() {
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      showImage(currentIndex);
+    }
+
+    // 绑定事件
+    prevButton.addEventListener('click', prevImage);
+    nextButton.addEventListener('click', nextImage);
+
+    // 自动播放
+    setInterval(nextImage, 3000);
+  </script>
+
+
+    <div id="content">
+        <div id="left">
+            <div class="p1">
+                <h4>我们的职责</h4>提供线上支教服务新模式基于教育信息化背景，改变乡村留守儿童的课后服务机制，提供一个完善的课后服务体系、丰富学生的童年生活文本
+            </div>
+            <div class="p2">
+                <h4>我们的工作模式</h4>课后服务体系与互联网技术相结合丰富课余生活并培养爱好，定期心理疏导，积极组织冬/夏令营，创建学生自己的个人营地
+            </div>
+            <div class="p3">
+                <h4>我们的工作模式</h4>课后服务体系与互联网技术相结合丰富课余生活并培养爱好，定期心理疏导，积极组织冬/夏令营，创建学生自己的个人营地
+            </div>
+        </div>
+
+        <div id="right">
+            <div class="imag1">
+                <h1><img src="imgs/s-1.jpg" alt=""></h1>
+                <h4>项目成员赴重庆市永川区进行实地调研</h4>
+                2024年5月14日，项目小组成员来到重庆市永川区三官殿小学进行为期一周的支教活动。三官殿小学是一所城镇完全小学，这里的学生大多数都是留守儿童，大学生老师的到来为教学活动注入了新的生命力，给予孩子们拓展视野的机会，非常有利于他们的成长。同时该专业的学生也能在此次支教活动中涵养教育情怀，提升教学技能。
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+        <div class="contact-info">
+            <div>电话：<a href="tel:+8612345678901">+86 123 4567 8901</a></div>
+            <div>电话：<a href="tel:0931-1234567">0931-1234567</a></div>
+            <div>邮箱：<a href="mailto:example@example.com">example@example.com</a></div>
+        </div>
+        <div class="copyright">
+            © 2024 1+e烛火支教营 | 西北民族大学 | <a href="https://dwz.cn/p7os1hhX" target="_blank"
+                rel="noopener noreferrer">甘肃省兰州市榆中县夏官营镇</a> | 经度:XXX° 纬度:YYY°
+        </div>
+    </div>
+</body>
+
+</html>
