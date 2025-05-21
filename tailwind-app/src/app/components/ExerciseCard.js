@@ -1,52 +1,65 @@
-// ... existing code ...
-import Navbar from "./components/Navbar";
+// src/components/ExerciseCard.js
 import React from "react";
 
-// 作业卡片组件
-function HomeworkCard({ title, desc, link }) {
+/**
+ * ExerciseCard 组件
+ * @param {object} props - 组件属性
+ * @param {string} props.title - 练习标题
+ * @param {string} props.description - 练习描述
+ * @param {string} props.imageUrl - 图片URL (来自Unsplash)
+ * @param {string} props.link - 练习链接 (可选)
+ * @param {string[]} props.tags - 练习相关的技术标签 (可选)
+ */
+export default function ExerciseCard({
+  title,
+  description,
+  imageUrl,
+  link,
+  tags,
+}) {
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-shadow duration-300 p-6 mb-6 transform hover:scale-105">
-      <h2 className="text-xl font-semibold mb-2">{title}</h2>
-      <p className="text-gray-600">{desc}</p>
-      <a
-        href={link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:scale-105 hover:bg-blue-700 transition-all duration-200"
-      >
-        查看详情
-      </a>
-    </div>
-  );
-}
-
-// 页面主组件
-export default function HomeworkShowcase() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
-      <Navbar />
-      <main className="max-w-2xl mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold text-center mb-8 text-slate-800">Web前端开发课程作业展示</h1>
-        {/* 搜索表单 */}
-        <form className="mb-8 flex gap-4">
-          <input
-            type="text"
-            placeholder="搜索作业..."
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-          />
-          <button
-            type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:scale-105 hover:bg-blue-700 transition-all duration-200"
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+      {/* 图片区域 - Unsplash图片将在这里显示 */}
+      <img
+        className="w-full h-48 object-cover"
+        src={imageUrl} // 默认占位图
+        alt={title || "Exercise Image"}
+      />
+      <div className="p-6">
+        <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+          {title || "练习标题"}
+        </h3>
+        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+          {description || "这里是练习的简要描述，介绍练习的主要内容和目标。"}
+        </p>
+        {/* 技术标签 */}
+        {tags && tags.length > 0 && (
+          <div className="mb-4">
+            {tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-block bg-sky-100 text-sky-700 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {/* 操作按钮 */}
+        {link && (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-rose-600 text-white px-6 py-2 rounded-md font-medium
+                       transform transition-transform duration-200 hover:scale-105 hover:bg-rose-700
+                       focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50"
           >
-            搜索
-          </button>
-        </form>
-        {/* 作业卡片列表 */}
-        <HomeworkCard title="作业一：静态网页设计" desc="使用HTML和CSS完成个人主页设计。" link="#" />
-        <HomeworkCard title="作业二：响应式布局" desc="实现移动端与桌面端自适应页面。" link="#" />
-        <HomeworkCard title="作业三：异步数据交互" desc="用fetch获取并渲染远程数据。" link="#" />
-      </main>
+            查看练习
+          </a>
+        )}
+        {!link && <p className="text-sm text-gray-400">暂无在线链接</p>}
+      </div>
     </div>
   );
 }
-// ... existing code ...
