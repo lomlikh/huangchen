@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>据说理论——沉默的螺旋理论</title>
+  <!-- 引入外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1a1a1a', // 黑色系
+            secondary: '#FFD700', // 金色系
+            neutral: '#262626',
+            dark: '#121212'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Merriweather', 'Georgia', 'serif']
+          },
+        },
+      }
+    }
+  </script>
+
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .bg-gradient-blue {
+        background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+      }
+
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      
+      .search-highlight {
+        background-color: #FFD700;
+        color: #1a1a1a;
+        font-weight: bold;
+      }
+      
+      .answer-correct {
+        color: #4ade80;
+      }
+      
+      .answer-incorrect {
+        color: #f87171;
+      }
+      
+      .nav-link-active {
+        background-color: #FFD700;
+        color: #1a1a1a;
+        border-radius: 0.5rem;
+      }
+    }
+  </style>
+
+  <style>
+    /* 自定义样式 */
+    .timeline-item {
+      transition: all 0.3s ease;
+    }
+
+    .timeline-item.active {
+      transform: scale(1.02);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .spiral-path {
+      transition: all 0.3s ease;
+    }
+
+    .spiral-path:hover {
+      fill: #FFD700 !important;
+      transform: translateY(-2px);
+    }
+
+    .hover-card {
+      transition: all 0.3s ease;
+    }
+
+    .hover-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .float-animation-delay-1 {
+      animation: float 6s ease-in-out 1s infinite;
+    }
+
+    .float-animation-delay-2 {
+      animation: float 6s ease-in-out 2s infinite;
+    }
+    
+    /* 搜索结果动画 */
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+      }
+    }
+    
+    .search-result-highlight {
+      animation: pulse 2s infinite;
+    }
+    
+    /* 答题动画 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    /* 导航窗格样式 */
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-item:hover {
+      background-color: rgba(255, 215, 0, 0.1);
+      transform: translateX(5px);
+    }
+    
+    .nav-item.active {
+      background-color: #FFD700;
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    
+    .nav-icon {
+      margin-right: 0.75rem;
+      width: 1.25rem;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body class="bg-neutral text-white">
+  <!-- 顶部搜索栏 -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-primary/90 backdrop-blur-md shadow-lg">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center">
+          <div class="h-10 w-10 rounded-full bg-gradient-blue flex items-center justify-center text-white mr-3">
+            <i class="fa fa-comments-o text-xl"></i>
+          </div>
+          <span class="text-xl font-bold">据说理论</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="relative w-full max-w-md mx-4">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="搜索理论内容..." 
+            class="w-full py-2 px-4 pr-10 rounded-full bg-neutral border border-gray-600 focus:outline-none focus:ring-2 focus:ring-secondary/50"
+          >
+          <button id="search-button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-secondary">
+            <i class="fa fa-search"></i>
+          </button>
+          <div id="search-results" class="absolute left-0 right-0 mt-2 bg-primary rounded-lg shadow-lg z-10 hidden"></div>
+        </div>
+        
+        <div class="flex items-center">
+          <button id="toggle-theme" class="p-2 rounded-full hover:bg-neutral transition-colors">
+            <i class="fa fa-moon-o"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 左侧导航栏 -->
+  <nav class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-primary p-4 pt-8 overflow-y-auto scrollbar-hide">
+    <div class="space-y-2">
+      <a href="#overview" class="nav-item active" data-section="overview">
+        <i class="fa fa-info-circle nav-icon"></i>
+        <span>理论概述</span>
+      </a>
+      <a href="#origin" class="nav-item" data-section="origin">
+        <i class="fa fa-history nav-icon"></i>
+        <span>起源发展</span>
+      </a>
+      <a href="#mechanism" class="nav-item" data-section="mechanism">
+        <i class="fa fa-cogs nav-icon"></i>
+        <span>作用机制</span>
+      </a>
+      <a href="#cases" class="nav-item" data-section="cases">
+        <i class="fa fa-book nav-icon"></i>
+        <span>经典案例</span>
+      </a>
+      <a href="#quiz" class="nav-item" data-section="quiz">
+        <i class="fa fa-question-circle nav-icon"></i>
+        <span>理论测验</span>
+      </a>
+      <a href="#references" class="nav-item" data-section="references">
+        <i class="fa fa-file-text-o nav-icon"></i>
+        <span>参考文献</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- 主体内容 -->
+  <div class="ml-64 pt-16">
+    <!-- 英雄区域 -->
+    <section id="overview" class="pt-28 pb-20 bg-gradient-blue text-white relative overflow-hidden">
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full bg-[url('https://picsum.photos/id/1/1920/1080')] opacity-10 bg-cover bg-center"></div>
+        <div class="absolute top-10 right-10 w-40 h-40 rounded-full bg-white/5 float-animation"></div>
+        <div class="absolute bottom-20 left-20 w-60 h-60 rounded-full bg-white/5 float-animation-delay-1"></div>
+        <div class="absolute top-1/2 left-1/3 w-20 h-20 rounded-full bg-white/5 float-animation-delay-2"></div>
+      </div>
+
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-4xl mx-auto text-center">
+          <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight mb-6 text-shadow">沉默的螺旋理论</h1>
+          <p class="text-[clamp(1.1rem,2vw,1.3rem)] mb-10 opacity-90">
+            舆论如何塑造社会共识？我们为何选择沉默或发声？
+          </p>
+          <div class="flex flex-wrap justify-center gap-4">
+            <a href="#overview" class="bg-white text-primary px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+              开始探索 <i class="fa fa-arrow-right ml-2"></i>
+            </a>
+            <a href="#quiz" class="bg-white/20 backdrop-blur-sm text-white px-8 py-3 rounded-full font-medium hover:bg-white/30 transition-all">
+              理论测验
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 理论概述 -->
+    <section id="overview" class="py-20 bg-neutral">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">理论概述</h2>
+            <div class="w-20 h-1 bg-secondary mx-auto mb-6"></div>
+            <p class="text-lg text-gray-300 max-w-3xl mx-auto">
+              沉默的螺旋理论是传播学领域的经典理论，解释了舆论形成的社会心理机制
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div class="order-2 md:order-1">
+              <h3 class="text-2xl font-bold mb-6">核心概念</h3>
+              <p class="text-gray-300 mb-6 leading-relaxed">
+                沉默的螺旋理论由德国传播学者伊丽莎白·诺尔 - 诺依曼在1974年提出，认为舆论的形成不是公众"理性讨论"的结果，而是"意见气候"的压力作用于人们惧怕孤立的心理，强制人们对"优势意见"采取趋同行动这一非合理过程的产物。
+              </p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
+                <div class="bg-primary p-6 rounded-xl hover-card">
+                  <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                    <i class="fa fa-eye text-secondary text-xl"></i>
+                  </div>
+                  <h4 class="font-bold text-lg mb-2">意见气候感知</h4>
+                  <p class="text-gray-300 text-sm">人们通过观察媒介内容和周围环境来感知意见分布</p>
+                </div>
+
+                <div class="bg-primary p-6 rounded-xl hover-card">
+                  <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                    <i class="fa fa-users text-secondary text-xl"></i>
+                  </div>
+                  <h4 class="font-bold text-lg mb-2">害怕孤立心理</h4>
+                  <p class="text-gray-300 text-sm">人类本能地寻求群体认同，避免被社会孤立</p>
+                </div>
+
+                <div class="bg-primary p-6 rounded-xl hover-card">
+                  <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                    <i class="fa fa-volume-up text-secondary text-xl"></i>
+                  </div>
+                  <h4 class="font-bold text-lg mb-2">螺旋式发展</h4>
+                  <p class="text-gray-300 text-sm">优势意见更易被表达，劣势意见逐渐沉默，形成螺旋效应</p>
+                </div>
+
+                <div class="bg-primary p-6 rounded-xl hover-card">
+                  <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                    <i class="fa fa-television text-secondary text-xl"></i>
+                  </div>
+                  <h4 class="font-bold text-lg mb-2">媒介的力量</h4>
+                  <p class="text-gray-300 text-sm">大众传媒通过选择性报道塑造"意见气候"</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="order-1 md:order-2">
+              <div class="relative">
+                <div class="bg-secondary/5 rounded-2xl p-8 shadow-lg">
+                  <div id="spiral-container" class="w-full h-64 mb-8"></div>
+                  <div class="text-center">
+                    <h4 class="font-bold text-lg mb-2">沉默的螺旋动态模型</h4>
+                    <p class="text-gray-300 text-sm">
+                      点击或悬停螺旋元素，探索沉默的螺旋理论的形成过程
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 装饰元素 -->
+                <div class="absolute -top-6 -right-6 w-20 h-20 bg-secondary/10 rounded-full"></div>
+                <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-secondary/10 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 起源发展 -->
+    <section id="origin" class="py-20 bg-primary">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">起源与发展</h2>
+            <div class="w-20 h-1 bg-secondary mx-auto mb-6"></div>
+            <p class="text-lg text-gray-300 max-w-3xl mx-auto">
+              追溯沉默的螺旋理论的历史轨迹，从诞生到当代的演变
+            </p>
+          </div>
+
+          <div class="relative">
+            <!-- 时间轴 -->
+            <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gray-500"></div>
+
+            <div class="space-y-12" id="timeline">
+              <!-- 时间点1 -->
+              <div class="timeline-item relative flex flex-col md:flex-row items-center md:items-start" data-year="1965">
+                <div class="md:w-1/2 md:pr-12 md:text-right order-2 md:order-1 mt-4 md:mt-0">
+                  <div class="bg-neutral p-6 rounded-xl shadow-md hover-card">
+                    <h3 class="text-xl font-bold mb-3">理论雏形</h3>
+                    <p class="text-gray-300">
+                      诺尔 - 诺依曼在研究1965年德国议会选举时发现，尽管民意调查显示两党支持率接近，但媒体报道和公众感知却呈现一边倒的趋势。她首次观察到"意见气候"对公众行为的影响。
+                    </p>
+                  </div>
+                </div>
+
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-secondary border-4 border-white z-10 flex items-center justify-center text-white">
+                  <i class="fa fa-calendar"></i>
+                </div>
+
+                <div class="md:w-1/2 md:pl-12 order-1 md:order-2">
+                  <span class="inline-block bg-secondary text-white px-4 py-1 rounded-full text-sm font-medium">1965</span>
+                </div>
+              </div>
+
+              <!-- 时间点2 -->
+              <div class="timeline-item relative flex flex-col md:flex-row items-center md:items-start" data-year="1974">
+                <div class="md:w-1/2 md:pr-12 order-2 md:order-1 mt-4 md:mt-0">
+                  <span class="inline-block bg-secondary text-white px-4 py-1 rounded-full text-sm font-medium">1974</span>
+                </div>
+
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-secondary border-4 border-white z-10 flex items-center justify-center text-white">
+                  <i class="fa fa-calendar"></i>
+                </div>
+
+                <div class="md:w-1/2 md:pl-12 order-1 md:order-2">
+                  <div class="bg-neutral p-6 rounded-xl shadow-md hover-card">
+                    <h3 class="text-xl font-bold mb-3">理论提出</h3>
+                    <p class="text-gray-300">
+                      诺尔 - 诺依曼在《传播学刊》发表论文《重归大众传媒的强力观》，正式提出"沉默的螺旋"概念，挑战当时流行的"有限效果论"，重新强调大众传播在舆论形成中的强大作用。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 时间点3 -->
+              <div class="timeline-item relative flex flex-col md:flex-row items-center md:items-start" data-year="1980">
+                <div class="md:w-1/2 md:pr-12 md:text-right order-2 md:order-1 mt-4 md:mt-0">
+                  <div class="bg-neutral p-6 rounded-xl shadow-md hover-card">
+                    <h3 class="text-xl font-bold mb-3">理论系统化</h3>
+                    <p class="text-gray-300">
+                      诺尔 - 诺依曼出版《沉默的螺旋：舆论——我们的社会皮肤》，系统阐述了理论框架，提出五个基本假设，将舆论视为社会控制的机制，并强调媒介在构建"意见气候"中的核心作用。
+                    </p>
+                  </div>
+                </div>
+
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-secondary border-4 border-white z-10 flex items-center justify-center text-white">
+                  <i class="fa fa-calendar"></i>
+                </div>
+
+                <div class="md:w-1/2 md:pl-12 order-1 md:order-2">
+                  <span class="inline-block bg-secondary text-white px-4 py-1 rounded-full text-sm font-medium">1980</span>
+                </div>
+              </div>
+
+              <!-- 时间点4 -->
+              <div class="timeline-item relative flex flex-col md:flex-row items-center md:items-start" data-year="2000">
+                <div class="md:w-1/2 md:pr-12 order-2 md:order-1 mt-4 md:mt-0">
+                  <span class="inline-block bg-secondary text-white px-4 py-1 rounded-full text-sm font-medium">2000</span>
+                </div>
+
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-secondary border-4 border-white z-10 flex items-center justify-center text-white">
+                  <i class="fa fa-calendar"></i>
+                </div>
+
+                <div class="md:w-1/2 md:pl-12 order-1 md:order-2">
+                  <div class="bg-neutral p-6 rounded-xl shadow-md hover-card">
+                    <h3 class="text-xl font-bold mb-3">网络时代的挑战</h3>
+                    <p class="text-gray-300">
+                      随着互联网普及，学者开始研究理论在新媒体环境下的适用性。一些研究认为，网络的匿名性和互动性可能削弱沉默的螺旋效应，但也有研究发现，群体压力在网络空间依然存在。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 时间点5 -->
+              <div class="timeline-item relative flex flex-col md:flex-row items-center md:items-start" data-year="2010">
+                <div class="md:w-1/2 md:pr-12 md:text-right order-2 md:order-1 mt-4 md:mt-0">
+                  <div class="bg-neutral p-6 rounded-xl shadow-md hover-card">
+                    <h3 class="text-xl font-bold mb-3">理论修正与拓展</h3>
+                    <p class="text-gray-300">
+                      学者提出"双螺旋模型"，认为传统媒体与新媒体形成两个相互作用的舆论场。同时，研究发现"反沉默螺旋"现象，即少数派通过网络动员形成中坚力量，扭转舆论走向。
+                    </p>
+                  </div>
+                </div>
+
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-secondary border-4 border-white z-10 flex items-center justify-center text-white">
+                  <i class="fa fa-calendar"></i>
+                </div>
+
+                <div class="md:w-1/2 md:pl-12 order-1 md:order-2">
+                  <span class="inline-block bg-secondary text-white px-4 py-1 rounded-full text-sm font-medium">2010</span>
+                </div>
+              </div>
+
+              <!-- 时间点6 -->
+              <div class="timeline-item relative flex flex-col md:flex-row items-center md:items-start" data-year="2020">
+                <div class="md:w-1/2 md:pr-12 order-2 md:order-1 mt-4 md:mt-0">
+                  <span class="inline-block bg-secondary text-white px-4 py-1 rounded-full text-sm font-medium">2020</span>
+                </div>
+
+                <div class="absolute left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-secondary border-4 border-white z-10 flex items-center justify-center text-white">
+                  <i class="fa fa-calendar"></i>
+                </div>
+
+                <div class="md:w-1/2 md:pl-12 order-1 md:order-2">
+                  <div class="bg-neutral p-6 rounded-xl shadow-md hover-card">
+                    <h3 class="text-xl font-bold mb-3">算法时代的新挑战</h3>
+                    <p class="text-gray-300">
+                      随着社交媒体算法推荐系统的普及，学者开始关注"信息茧房"和"过滤气泡"如何强化沉默的螺旋效应。研究发现，算法可能加剧群体极化，使人们更难接触到异见。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 作用机制 -->
+    <section id="mechanism" class="py-20 bg-neutral">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">作用机制</h2>
+            <div class="w-20 h-1 bg-secondary mx-auto mb-6"></div>
+            <p class="text-lg text-gray-300 max-w-3xl mx-auto">
+              深入理解沉默的螺旋理论的运作原理与核心机制
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-12 mb-16">
+            <div>
+              <h3 class="text-2xl font-bold mb-6">理论模型</h3>
+              <p class="text-gray-300 mb-6 leading-relaxed">
+                沉默的螺旋理论基于三个核心要素：社会孤立恐惧、意见气候感知和螺旋式发展过程。这一理论描述了人们如何在感知到舆论趋势后，调整自己的表达行为，从而影响舆论的形成。
+              </p>
+
+              <div class="space-y-6">
+                <div class="flex items-start">
+                  <div class="bg-secondary/10 p-3 rounded-lg mr-4">
+                    <i class="fa fa-lightbulb-o text-secondary text-xl"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg mb-2">社会孤立恐惧</h4>
+                    <p class="text-gray-300">
+                      人类作为社会性动物，本能地害怕被社会孤立。这种恐惧促使人们关注他人的意见，并调整自己的行为以符合多数人。
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex items-start">
+                  <div class="bg-secondary/10 p-3 rounded-lg mr-4">
+                    <i class="fa fa-radar text-secondary text-xl"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg mb-2">意见气候感知</h4>
+                    <p class="text-gray-300">
+                      人们通过观察媒介内容和社会环境，形成对"意见气候"的感知。这种感知并非完全客观，而是受到媒体报道和个人社交圈子的影响。
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex items-start">
+                  <div class="bg-secondary/10 p-3 rounded-lg mr-4">
+                    <i class="fa fa-refresh text-secondary text-xl"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg mb-2">螺旋式发展</h4>
+                    <p class="text-gray-300">
+                      当人们感知到某一意见处于优势地位时，倾向于公开表达；而认为自己属于少数派时，则倾向于保持沉默。这种沉默与表达的互动，形成螺旋式的舆论强化过程。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative">
+              <div class="bg-primary rounded-2xl p-8 shadow-lg">
+                <h4 class="text-xl font-bold mb-6 text-center">传统媒体 vs 新媒体环境下的沉默螺旋</h4>
+                <div class="h-80 mb-6">
+                  <canvas id="media-comparison-chart"></canvas>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="bg-neutral p-4 rounded-lg">
+                    <h5 class="font-bold mb-2 flex items-center">
+                      <span class="inline-block w-3 h-3 rounded-full bg-secondary mr-2"></span>
+                      传统媒体
+                    </h5>
+                    <ul class="text-sm text-gray-300 space-y-1">
+                      <li>• 单向传播，受众被动接受信息</li>
+                      <li>• 媒体议程设置能力强</li>
+                      <li>• 意见气候同质化</li>
+                      <li>• 沉默螺旋效应明显</li>
+                    </ul>
+                  </div>
+                  <div class="bg-neutral p-4 rounded-lg">
+                    <h5 class="font-bold mb-2 flex items-center">
+                      <span class="inline-block w-3 h-3 rounded-full bg-white mr-2"></span>
+                      新媒体
+                    </h5>
+                    <ul class="text-sm text-gray-300 space-y-1">
+                      <li>• 双向互动，用户参与度高</li>
+                      <li>• 信息碎片化，多意见并存</li>
+                      <li>• 群体极化现象普遍</li>
+                      <li>• 可能出现反沉默螺旋</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 装饰元素 -->
+              <div class="absolute -top-6 -right-6 w-20 h-20 bg-secondary/10 rounded-full"></div>
+              <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-secondary/10 rounded-full"></div>
+            </div>
+          </div>
+
+          <div class="bg-primary rounded-2xl p-8 shadow-lg">
+            <h3 class="text-2xl font-bold mb-6 text-center">沉默的螺旋理论五要素</h3>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+              <div class="bg-neutral p-6 rounded-xl text-center hover-card">
+                <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fa fa-user text-secondary text-2xl"></i>
+                </div>
+                <h4 class="font-bold text-lg mb-2">社会孤立恐惧</h4>
+                <p class="text-gray-300 text-sm">
+                  个体因害怕被社会孤立而调整自己的意见表达
+                </p>
+              </div>
+
+              <div class="bg-neutral p-6 rounded-xl text-center hover-card">
+                <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fa fa-eye text-secondary text-2xl"></i>
+                </div>
+                <h4 class="font-bold text-lg mb-2">准统计官能</h4>
+                <p class="text-gray-300 text-sm">
+                  个体通过观察环境来感知"意见气候"的能力
+                </p>
+              </div>
+
+              <div class="bg-neutral p-6 rounded-xl text-center hover-card">
+                <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fa fa-bullhorn text-secondary text-2xl"></i>
+                </div>
+                <h4 class="font-bold text-lg mb-2">意见表达</h4>
+                <p class="text-gray-300 text-sm">
+                  感知到优势意见时倾向于表达，反之则沉默
+                </p>
+              </div>
+
+              <div class="bg-neutral p-6 rounded-xl text-center hover-card">
+                <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fa fa-refresh text-secondary text-2xl"></i>
+                </div>
+                <h4 class="font-bold text-lg mb-2">螺旋过程</h4>
+                <p class="text-gray-300 text-sm">
+                  优势意见增强，劣势意见减弱的循环过程
+                </p>
+              </div>
+
+              <div class="bg-neutral p-6 rounded-xl text-center hover-card">
+                <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fa fa-television text-secondary text-2xl"></i>
+                </div>
+                <h4 class="font-bold text-lg mb-2">大众媒介</h4>
+                <p class="text-gray-300 text-sm">
+                  通过选择性报道塑造"意见气候"的核心力量
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 经典案例 -->
+    <section id="cases" class="py-20 bg-neutral">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">经典案例</h2>
+            <div class="w-20 h-1 bg-secondary mx-auto mb-6"></div>
+            <p class="text-lg text-gray-300 max-w-3xl mx-auto">
+              通过真实案例理解沉默的螺旋理论在现实中的应用
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <div class="bg-primary rounded-xl overflow-hidden shadow-lg hover-card">
+              <div class="h-48 bg-gray-200 relative">
+                <img src="https://picsum.photos/id/116/800/400" alt="1965年德国大选" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                  <h3 class="text-white text-xl font-bold p-6">1965年德国大选</h3>
+                </div>
+              </div>
+              <div class="p-6">
+                <p class="text-gray-300 mb-4">
+                  在1965年的德国大选中，基督教民主联盟(CDU)与社会民主党(SPD)的支持率在选举前的民意调查中非常接近。然而，媒体报道和公众感知却显示CDU具有明显优势。
+                </p>
+                <div class="bg-neutral p-4 rounded-lg mb-4">
+                  <h4 class="font-bold mb-2">沉默的螺旋效应</h4>
+                  <p class="text-gray-300 text-sm">
+                    许多原本支持SPD的选民，由于感知到"舆论气候"对CDU有利，担心自己属于少数派而被孤立，因此选择保持沉默或转向支持CDU。这种沉默的螺旋效应最终导致CDU以远超预期的优势赢得选举。
+                  </p>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-400">传统媒体时代典型案例</span>
+                  <a href="#" class="text-secondary hover:text-secondary/80 font-medium">
+                    深入分析 <i class="fa fa-arrow-right ml-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-primary rounded-xl overflow-hidden shadow-lg hover-card">
+              <div class="h-48 bg-gray-200 relative">
+                <img src="https://picsum.photos/id/20/800/400" alt="湖南湘潭产妇事件" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                  <h3 class="text-white text-xl font-bold p-6">湖南湘潭产妇事件</h3>
+                </div>
+              </div>
+              <div class="p-6">
+                <p class="text-gray-300 mb-4">
+                  2014年，湖南湘潭一位产妇在医院死亡事件引发网络热议。初期，由于信息不透明，媒体报道偏向指责医院，网络舆论一边倒。
+                </p>
+                <div class="bg-neutral p-4 rounded-lg mb-4">
+                  <h4 class="font-bold mb-2">新媒体环境下的螺旋效应</h4>
+                  <p class="text-gray-300 text-sm">
+                    许多网民在未了解事实全貌的情况下，跟风批评医院。少数试图理性分析的声音被淹没在情绪化的声讨中，形成沉默的螺旋。随着更多事实披露，舆论逐渐转向理性讨论，但初期的沉默螺旋效应已造成严重影响。
+                  </p>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-400">新媒体时代典型案例</span>
+                  <a href="#" class="text-secondary hover:text-secondary/80 font-medium">
+                    深入分析 <i class="fa fa-arrow-right ml-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-primary rounded-xl overflow-hidden shadow-lg mb-12 hover-card">
+            <div class="h-64 bg-gray-200 relative">
+              <img src="https://picsum.photos/id/1005/1200/400" alt="疫苗接种舆论争议" class="w-full h-full object-cover">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                <h3 class="text-white text-xl font-bold p-6">疫苗接种舆论争议</h3>
+              </div>
+            </div>
+            <div class="p-6">
+              <p class="text-gray-300 mb-4">
+                在疫苗接种问题上，社交媒体上经常出现两极化的观点。一方强烈支持疫苗接种，认为这是公共卫生的关键；另一方则传播疫苗安全性质疑。
+              </p>
+              <div class="bg-neutral p-4 rounded-lg mb-4">
+                <h4 class="font-bold mb-2">信息茧房中的螺旋效应</h4>
+                <p class="text-gray-300 text-sm">
+                  在社交媒体算法的影响下，人们往往被推送与自己观点一致的信息，形成"信息茧房"。这导致不同观点的群体之间缺乏交流，各自强化自身立场，形成沉默的螺旋。支持疫苗的群体可能因占据舆论优势而更积极表达，而持怀疑态度的群体可能因担心被孤立而选择沉默或转向更极端的立场。
+                </p>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-400">算法时代典型案例</span>
+                <a href="#" class="text-secondary hover:text-secondary/80 font-medium">
+                  深入分析 <i class="fa fa-arrow-right ml-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 理论测验 -->
+    <section id="quiz" class="py-20 bg-neutral">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">理论测验</h2>
+            <div class="w-20 h-1 bg-secondary mx-auto mb-6"></div>
+            <p class="text-lg text-gray-300 max-w-3xl mx-auto">
+              通过答题检验你对沉默的螺旋理论的掌握程度
+            </p>
+          </div>
+
+          <div class="bg-primary rounded-2xl p-8 shadow-lg" id="quiz-container">
+            <div id="quiz-progress" class="mb-8">
+              <div class="text-sm text-gray-400 mb-2">
+                <span id="current-question">1</span>/<span id="total-questions">5</span>
+              </div>
+              <div class="w-full bg-neutral rounded-full h-2.5">
+                <div id="progress-bar" class="bg-secondary h-2.5 rounded-full" style="width: 20%"></div>
+              </div>
+            </div>
+
+            <div id="question-container" class="mb-8">
+              <h3 class="text-xl font-bold mb-4" id="question-text">1. 沉默的螺旋理论是由哪位学者提出的？</h3>
+              <div class="space-y-3" id="answers-container">
+                <label class="flex items-center p-3 bg-neutral rounded-lg cursor-pointer hover:bg-neutral/80 transition-colors">
+                  <input type="radio" name="current-question" value="A" class="mr-3">
+                  <span>A. 伊丽莎白·诺尔 - 诺依曼</span>
+                </label>
+                <label class="flex items-center p-3 bg-neutral rounded-lg cursor-pointer hover:bg-neutral/80 transition-colors">
+                  <input type="radio" name="current-question" value="B" class="mr-3">
+                  <span>B. 麦克卢汉</span>
+                </label>
+                <label class="flex items-center p-3 bg-neutral rounded-lg cursor-pointer hover:bg-neutral/80 transition-colors">
+                  <input type="radio" name="current-question" value="C" class="mr-3">
+                  <span>C. 拉扎斯菲尔德</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <button id="prev-question" class="px-6 py-2 rounded-lg bg-neutral text-white hover:bg-neutral/80 transition-colors hidden">
+                上一题
+              </button>
+              <div class="flex gap-4">
+                <button id="next-question" class="px-6 py-2 rounded-lg bg-secondary text-primary font-medium hover:bg-secondary/90 transition-colors">
+                  下一题
+                </button>
+                <button id="submit-answer" class="px-6 py-2 rounded-lg bg-secondary text-primary font-medium hover:bg-secondary/90 transition-colors hidden">
+                  提交答案
+                </button>
+              </div>
+            </div>
+
+            <div id="answer-explanation" class="mt-8 p-4 bg-neutral rounded-lg hidden fade-in">
+              <div id="correct-answer" class="font-bold mb-2">
+                正确答案：A. 伊丽莎白·诺尔 - 诺依曼
+              </div>
+              <div id="explanation-text" class="text-gray-300">
+                沉默的螺旋理论由德国传播学者伊丽莎白·诺尔 - 诺依曼在1974年提出，她在《重归大众传媒的强力观》一文中首次阐述了这一理论。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script>
+      // 测验数据结构
+      const quizQuestions = [
+        {
+          question: "1. 沉默的螺旋理论是由哪位学者提出的？",
+          options: ["A. 伊丽莎白·诺尔-诺依曼", "B. 麦克卢汉", "C. 拉扎斯菲尔德"],
+          correct: "A",
+          explanation: "该理论由德国传播学者伊丽莎白·诺尔-诺依曼于1974年在《重归大众传媒的强力观》中提出。"
+        },
+        {
+          question: "2. 理论核心机制不包括以下哪项？",
+          options: ["A. 社会孤立恐惧", "B. 信息传播速度", "C. 螺旋式发展"],
+          correct: "B",
+          explanation: "核心机制包括社会孤立恐惧、意见气候感知和螺旋式发展，与信息传播速度无直接关联。"
+        },
+        {
+          question: "3. 新媒体环境下沉默螺旋的变化是？",
+          options: ["A. 完全消失", "B. 可能出现反螺旋", "C. 效应更强"],
+          correct: "B",
+          explanation: "网络匿名性可能削弱传统螺旋效应，但群体极化和信息茧房可能引发反沉默螺旋。"
+        },
+        {
+          question: "4. 大众媒介的主要作用是？",
+          options: ["A. 塑造意见气候", "B. 提供娱乐", "C. 技术创新"],
+          correct: "A",
+          explanation: "理论认为媒介通过选择性报道构建'意见气候'，影响公众感知。"
+        },
+        {
+          question: "5. 螺旋效应的本质是？",
+          options: ["A. 理性讨论结果", "B. 社会控制机制", "C. 随机意见分布"],
+          correct: "B",
+          explanation: "舆论作为'社会皮肤'，通过沉默螺旋实现对个体的社会控制。"
+        }
+      ];
+      
+      let currentQuestionIndex = 0;
+      let userAnswers = [];
+      
+      // 初始化测验
+      function initQuiz() {
+        renderQuestion(currentQuestionIndex);
+        updateProgress();
+      }
+      
+      // 渲染题目
+      function renderQuestion(index) {
+        const q = quizQuestions[index];
+        document.getElementById('question-text').textContent = q.question;
+        
+        const answersContainer = document.getElementById('answers-container');
+        answersContainer.innerHTML = q.options.map(option => `
+          <label class="flex items-center p-3 bg-neutral rounded-lg cursor-pointer hover:bg-neutral/80 transition-colors">
+            <input type="radio" name="answer" value="${option[0]}" class="mr-3">
+            <span>${option}</span>
+          </label>
+        `).join('');
+        
+        document.getElementById('button-text').textContent = index === 0 ? "开始答题" : "提交答案";
+        document.getElementById('prev-question').classList.toggle('hidden', index === 0);
+      }
+      
+      // 处理答案提交
+      function handleAnswer() {
+        const selected = document.querySelector('input[name="answer"]:checked');
+        if (!selected) return alert('请选择一个答案');
+      
+        const currentQ = quizQuestions[currentQuestionIndex];
+        const isCorrect = selected.value === currentQ.correct;
+        
+        // 记录答案
+        userAnswers.push({
+          question: currentQ.question,
+          userAnswer: selected.value,
+          correctAnswer: currentQ.correct,
+          isCorrect
+        });
+      
+        // 显示解析
+        showExplanation(isCorrect, currentQ);
+      }
+      
+      // 显示答案解析
+      function showExplanation(isCorrect, question) {
+        const statusIcon = document.getElementById('answer-status');
+        const explanation = document.getElementById('answer-explanation');
+        
+        statusIcon.className = `fa ${isCorrect ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500'} mr-2`;
+        document.getElementById('correct-answer-text').textContent = `正确答案：${question.correct}`;
+        document.getElementById('explanation-text').textContent = question.explanation;
+        
+        explanation.classList.remove('hidden');
+        document.querySelectorAll('input[name="answer"]').forEach(input => input.disabled = true);
+        
+        // 切换按钮状态
+        document.getElementById('button-text').textContent = currentQuestionIndex === quizQuestions.length - 1 
+          ? "查看结果" 
+          : "下一题";
+        document.getElementById('next-question').dataset.action = "next";
+      }
+      
+      // 切换题目
+      function switchQuestion(direction) {
+        currentQuestionIndex += direction;
+        resetQuizState();
+        renderQuestion(currentQuestionIndex);
+        updateProgress();
+      }
+      
+      // 重置答题状态
+      function resetQuizState() {
+        document.getElementById('answer-explanation').classList.add('hidden');
+        document.querySelectorAll('input[name="answer"]').forEach(input => {
+          input.checked = false;
+          input.disabled = false;
+        });
+      }
+      
+      // 更新进度条
+      function updateProgress() {
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.style.width = `${(currentQuestionIndex + 1) * 20}%`;
+        document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+      }
+      
+      // 事件绑定
+      document.getElementById('next-question').addEventListener('click', function() {
+        if (currentQuestionIndex < quizQuestions.length) {
+          if (this.dataset.action === "next") {
+            handleAnswer();
+            this.dataset.action = "continue";
+            this.textContent = "下一题";
+          } else {
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+              switchQuestion(1);
+            } else {
+              showFinalResult();
+            }
+          }
+        }
+      });
+      
+      document.getElementById('prev-question').addEventListener('click', function() {
+        switchQuestion(-1);
+      });
+      
+      // 初始化
+      initQuiz();
+      </script>
+        <!-- 参考文献 -->
+        <section id="references" class="py-20 bg-primary">
+          <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-6xl mx-auto">
+              <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">参考文献</h2>
+                <div class="w-20 h-1 bg-secondary mx-auto mb-6"></div>
+                <p class="text-lg text-gray-300 max-w-3xl mx-auto">
+                  相关学术资料与研究文献
+                </p>
+              </div>
+              
+              <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-neutral p-6 rounded-xl hover-card">
+                  <h3 class="font-bold text-lg mb-3">学术著作</h3>
+                  <ul class="space-y-2 text-gray-300">
+                    <li>• Noelle-Neumann, E. (1984). The Spiral of Silence: Public Opinion - Our Social Skin. University of Chicago Press.</li>
+                    <li>• McQuail, D., & Windahl, S. (1993). Communication Models for the Study of Mass Communication. Longman.</li>
+                    <li>• 郭庆光. (1999). 传播学教程. 中国人民大学出版社.</li>
+                    <li>• 刘海龙. (2008). 大众传播理论: 范式与流派. 中国人民大学出版社.</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-neutral p-6 rounded-xl hover-card">
+                  <h3 class="font-bold text-lg mb-3">学术论文</h3>
+                  <ul class="space-y-2 text-gray-300">
+                    <li>• Noelle-Neumann, E. (1974). The spiral of silence: A theory of public opinion. Journal of Communication, 24(2), 43-51.</li>
+                    <li>• Scheufele, D. A., & Moy, P. (2000). Twenty-five years of the spiral of silence: A conceptual review and empirical outlook. International Journal of Public Opinion Research, 12(1), 3-28.</li>
+                    <li>• Sunstein, C. R. (2001). Republic.com. Princeton University Press.</li>
+                    <li>• 陈力丹, & 汪露. (2015). 沉默的螺旋理论在中国的研究与验证. 国际新闻界, 37(5), 106-122.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+    
+
+    <!-- 页脚 -->
+    <footer class="bg-primary py-12 text-center">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="mb-6 md:mb-0">
+            <div class="flex items-center justify-center md:justify-start">
+              <div class="h-10 w-10 rounded-full bg-gradient-blue flex items-center justify-center text-white mr-3">
+                <i class="fa fa-comments-o text-xl"></i>
+              </div>
+              <span class="text-xl font-bold">据说理论</span>
+            </div>
+            <p class="text-gray-400 mt-2">探索传播学经典理论</p>
+          </div>
+          
+          <div class="flex space-x-6 mb-6 md:mb-0">
+            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
+              <i class="fa fa-weibo text-xl"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
+              <i class="fa fa-wechat text-xl"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
+              <i class="fa fa-twitter text-xl"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
+              <i class="fa fa-facebook text-xl"></i>
+            </a>
+          </div>
+          
+          <div>
+            <p class="text-gray-400">© 2025 据说理论. 保留所有权利.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化导航栏滚动效果
+      const navItems = document.querySelectorAll('.nav-item');
+      const sections = document.querySelectorAll('section[id]');
+      
+      // 监听滚动事件
+      window.addEventListener('scroll', function() {
+        let currentSection = '';
+        
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop - 100;
+          const sectionHeight = section.offsetHeight;
+          if (pageYOffset >= sectionTop && pageYOffset < sectionTop + sectionHeight) {
+            currentSection = section.getAttribute('id');
+          }
+        });
+        
+        // 更新导航项状态
+        navItems.forEach(item => {
+          item.classList.remove('active');
+          if (item.getAttribute('data-section') === currentSection) {
+            item.classList.add('active');
+          }
+        });
+      });
+      
+      // 平滑滚动
+      navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('data-section');
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 64, // 考虑导航栏高度
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+      
+      // 初始化螺旋图表
+      initSpiralChart();
+      
+      // 初始化媒体对比图表
+      initMediaComparisonChart();
+      
+      // 初始化测验功能
+      initQuiz();
+      
+      // 初始化搜索功能
+      initSearch();
+    });
+    
+    // 初始化螺旋图表
+    function initSpiralChart() {
+      const container = d3.select('#spiral-container');
+      const width = container.node().getBoundingClientRect().width;
+      const height = 250;
+      const radius = Math.min(width, height) / 2 - 10;
+      
+      // 创建SVG
+      const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .attr('viewBox', `0 0 ${width} ${height}`)
+        .append('g')
+        .attr('transform', `translate(${width/2}, ${height/2})`);
+      
+      // 螺旋路径生成器
+      const spiral = d3.ribbonArrow()
+        .radius(radius)
+        .padAngle(0.05)
+        .startAngle(0)
+        .endAngle(Math.PI * 2.5);
+      
+      // 创建螺旋路径
+      const path = svg.append('path')
+        .attr('d', spiral)
+        .attr('fill', '#FFD700')
+        .attr('stroke', '#FFD700')
+        .attr('opacity', 0.3)
+        .attr('class', 'spiral-path');
+      
+      // 添加螺旋层级
+      const levels = 5;
+      const levelData = d3.range(levels).map(i => ({
+        startAngle: 0,
+        endAngle: Math.PI * 2.5,
+        radius: radius - (i * 20)
+      }));
+      
+      // 为每个层级创建路径
+      svg.selectAll('.level-path')
+        .data(levelData)
+        .enter()
+        .append('path')
+        .attr('d', d => spiral.radius(d.radius)())
+        .attr('fill', 'none')
+        .attr('stroke', (d, i) => `rgba(255, 215, 0, ${0.1 + (i * 0.15)})`)
+        .attr('stroke-width', 2)
+        .attr('class', 'spiral-path');
+      
+      // 添加标签
+      const labels = [
+        { angle: 0.2, text: '意见气候感知', radius: radius - 10 },
+        { angle: 1.0, text: '社会孤立恐惧', radius: radius - 30 },
+        { angle: 1.8, text: '表达优势意见', radius: radius - 50 },
+        { angle: 2.5, text: '沉默劣势意见', radius: radius - 70 },
+        { angle: 3.2, text: '螺旋式发展', radius: radius - 90 }
+      ];
+      
+      // 添加标签文本
+      svg.selectAll('.label')
+        .data(labels)
+        .enter()
+        .append('text')
+        .attr('transform', d => {
+          const angle = d.angle * Math.PI;
+          return `rotate(${(angle * 180 / Math.PI) - 90}) translate(${d.radius}, 0)`;
+        })
+        .attr('text-anchor', 'middle')
+        .attr('dy', '0.35em')
+        .attr('fill', 'white')
+        .attr('font-size', '12px')
+        .text(d => d.text);
+    }
+    
+    // 初始化媒体对比图表
+    function initMediaComparisonChart() {
+      const ctx = document.getElementById('media-comparison-chart').getContext('2d');
+      
+      const chart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['传播方式', '意见气候', '群体压力', '沉默效应', '异见表达'],
+          datasets: [
+            {
+              label: '传统媒体',
+              data: [20, 80, 75, 85, 15],
+              backgroundColor: 'rgba(255, 215, 0, 0.2)',
+              borderColor: 'rgba(255, 215, 0, 1)',
+              pointBackgroundColor: 'rgba(255, 215, 0, 1)',
+              pointBorderColor: '#fff',
+              pointHoverBackgroundColor: '#fff',
+              pointHoverBorderColor: 'rgba(255, 215, 0, 1)'
+            },
+            {
+              label: '新媒体',
+              data: [70, 40, 50, 55, 65],
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              borderColor: 'rgba(255, 255, 255, 1)',
+              pointBackgroundColor: 'rgba(255, 255, 255, 1)',
+              pointBorderColor: '#1a1a1a',
+              pointHoverBackgroundColor: '#1a1a1a',
+              pointHoverBorderColor: 'rgba(255, 255, 255, 1)'
+            }
+          ]
+        },
+        options: {
+          scales: {
+            r: {
+              angleLines: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              pointLabels: {
+                color: 'rgba(255, 255, 255, 0.7)',
+                font: {
+                  size: 12
+                }
+              },
+              ticks: {
+                backdropColor: 'transparent',
+                color: 'rgba(255, 255, 255, 0.5)'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: 'rgba(255, 255, 255, 0.7)'
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // 初始化测验功能
+    function initQuiz() {
+      // 测验数据
+      const quizData = [
+        {
+          question: "1. 沉默的螺旋理论是由哪位学者提出的？",
+          answers: [
+            "A. 伊丽莎白·诺尔 - 诺依曼",
+            "B. 麦克卢汉",
+            "C. 拉扎斯菲尔德"
+          ],
+          correct: "A",
+          explanation: "沉默的螺旋理论由德国传播学者伊丽莎白·诺尔 - 诺依曼在1974年提出，她在《重归大众传媒的强力观》一文中首次阐述了这一理论。"
+        },
+        {
+          question: "2. 沉默的螺旋理论认为，人们表达意见主要受以下哪种因素影响？",
+          answers: [
+            "A. 个人真实想法",
+            "B. 对意见气候的感知",
+            "C. 随机选择"
+          ],
+          correct: "B",
+          explanation: "沉默的螺旋理论认为，人们通过观察环境来感知意见气候，并根据这种感知来决定是否表达自己的观点。当感知到自己的观点属于多数派时，更倾向于表达；反之则倾向于沉默。"
+        },
+        {
+          question: "3. 沉默的螺旋理论中的'准统计官能'指的是什么？",
+          answers: [
+            "A. 人类天生的数学能力",

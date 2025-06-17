@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>“沉默的螺旋”理论梳理</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0099ff',
+            secondary: '#444444',
+            dark: '#1a1a1a',
+            light: '#f0f0f0', // 灰白色作为卡片背景
+            'light-gray': '#e0e0e0', // 浅灰色用于卡片悬停
+            'dark-gray': '#333333', // 深灰色用于卡片文本
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 153, 255, 0.1), 0 10px 10px -5px rgba(0, 153, 255, 0.04);
+      }
+      .timeline-item {
+        @apply relative pl-8 pb-10;
+      }
+      .timeline-item::before {
+        content: '';
+        @apply absolute left-0 top-2 w-4 h-4 rounded-full bg-primary;
+      }
+      .timeline-item::after {
+        content: '';
+        @apply absolute left-2 top-6 w-0.5 h-full bg-primary/30;
+      }
+      .timeline-item:last-child::after {
+        @apply hidden;
+      }
+    }
+  </style>
+</head>
+<body class="bg-black text-light">
+  <!-- 导航栏 -->
+  <nav class="fixed w-full bg-dark/80 backdrop-blur-md z-50 transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <a href="#" class="text-2xl font-bold text-primary flex items-center">
+        <i class="fa fa-comments-o mr-2"></i>
+        <span>沉默的螺旋</span>
+      </a>
+      <div class="hidden md:flex space-x-8">
+        <a href="#origin" class="hover:text-primary transition-colors">起源与背景</a>
+        <a href="#core" class="hover:text-primary transition-colors">核心观点</a>
+        <a href="#development" class="hover:text-primary transition-colors">发展脉络</a>
+        <a href="#application" class="hover:text-primary transition-colors">应用领域</a>
+        <a href="#research" class="hover:text-primary transition-colors">研究实证</a>
+        <a href="#criticism" class="hover:text-primary transition-colors">批评反思</a>
+      </div>
+      <button class="md:hidden text-primary text-xl" id="menu-toggle">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    <!-- 移动端菜单 -->
+    <div class="md:hidden bg-dark/95 backdrop-blur-md hidden" id="mobile-menu">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
+        <a href="#origin" class="py-2 hover:text-primary transition-colors">起源与背景</a>
+        <a href="#core" class="py-2 hover:text-primary transition-colors">核心观点</a>
+        <a href="#development" class="py-2 hover:text-primary transition-colors">发展脉络</a>
+        <a href="#application" class="py-2 hover:text-primary transition-colors">应用领域</a>
+        <a href="#research" class="py-2 hover:text-primary transition-colors">研究实证</a>
+        <a href="#criticism" class="py-2 hover:text-primary transition-colors">批评反思</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 英雄区域 -->
+  <header class="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-b from-dark to-black relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute w-64 h-64 rounded-full bg-primary/50 blur-3xl -top-10 -left-10"></div>
+      <div class="absolute w-96 h-96 rounded-full bg-primary/30 blur-3xl bottom-10 right-10"></div>
+    </div>
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="max-w-3xl mx-auto text-center">
+        <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold mb-6 text-shadow text-white">
+          “沉默的螺旋”<br class="md:hidden">理论梳理
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-300 mb-8">
+          社会舆论形成机制的经典理论
+        </p>
+        <a href="#origin" class="inline-block px-8 py-3 bg-primary text-black font-bold rounded-full hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30">
+          开始探索 <i class="fa fa-arrow-down ml-2"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-12">
+    <!-- 理论起源与背景 -->
+    <section id="origin" class="mb-20 scroll-mt-24">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 relative inline-block text-white">
+          <span class="relative z-10">一、理论起源与背景</span>
+          <span class="absolute bottom-0 left-0 w-full h-3 bg-primary/30 -z-10 transform -rotate-1"></span>
+        </h2>
+        <p class="text-gray-400 max-w-2xl mx-auto">20世纪60年代，大众传媒影响力日益凸显，"沉默的螺旋"理论应运而生</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-8 items-center">
+        <div class="bg-light rounded-2xl p-6 md:p-8 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+          <h3 class="text-2xl font-bold mb-4 text-primary">理论诞生背景</h3>
+          <p class="mb-4">20世纪60年代，大众传媒在社会中的影响力日益凸显，其传播的信息广泛且迅速地渗透到社会各个层面。</p>
+          <p>1965年，德国进行议会选举，在选举初期，社会民主党派系与基督教民主联盟和基督教社会联盟组成的派系支持率相近。然而，随着选举进程推进，后者支持率大幅超过前者并获得压倒性胜利。</p>
+        </div>
+        <div class="bg-light rounded-2xl p-6 md:p-8 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+          <h3 class="text-2xl font-bold mb-4 text-primary">伊丽莎白·诺埃尔-诺依曼</h3>
+          <div class="flex items-start mb-4">
+            <div class="w-20 h-20 rounded-full overflow-hidden mr-4 flex-shrink-0">
+              <img src="https://picsum.photos/seed/elizabeth/200/200" alt="伊丽莎白·诺埃尔-诺依曼肖像" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <p class="mb-2"><span class="font-bold">国籍：</span>德国</p>
+              <p class="mb-2"><span class="font-bold">职业：</span>社会学家、政治学家</p>
+              <p><span class="font-bold">主要著作：</span>《沉默的螺旋：舆论——我们的社会皮肤》</p>
+            </div>
+          </div>
+          <p>伊丽莎白·诺埃尔-诺依曼通过对德国议会选举的研究，提出了"沉默的螺旋"假说，该理论成为传播学领域的经典理论之一。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 核心观点与假设 -->
+    <section id="core" class="mb-20 scroll-mt-24">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 relative inline-block text-white">
+          <span class="relative z-10">二、核心观点与假设</span>
+          <span class="absolute bottom-0 left-0 w-full h-3 bg-primary/30 -z-10 transform -rotate-1"></span>
+        </h2>
+        <p class="text-gray-400 max-w-2xl mx-auto">个体在表达观点时会受到环境压力影响，进而形成舆论螺旋</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-light rounded-2xl p-6 md:p-8 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+          <h3 class="text-2xl font-bold mb-4 text-primary flex items-center">
+            <i class="fa fa-lightbulb-o mr-3 text-2xl"></i>
+            核心观点
+          </h3>
+          <p class="mb-4">该理论指出，个体在表达观点时，会受到周围环境压力的显著影响。当个体感知自己的观点与多数人不同时，为避免孤立，可能会选择沉默。</p>
+          <div class="bg-secondary/30 rounded-xl p-5 mt-6">
+            <p class="italic text-gray-300">"这种沉默会使优势意见更具优势，进而形成螺旋式的社会传播过程，最终可能导致舆论出现偏颇和失衡。"</p>
+          </div>
+          <div class="mt-6">
+            <h4 class="font-bold mb-2">举例说明：</h4>
+            <p>在学校班级讨论活动方案时，如果少数同学提出的方案与大多数同学的想法不同，这部分少数同学可能因担心被其他同学视为"不合群"而不表达自己的真实想法。</p>
+          </div>
+        </div>
+        
+        <div class="space-y-6">
+          <!-- 基本假设卡片1 -->
+          <div class="bg-light rounded-2xl p-6 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4 flex-shrink-0">
+                <i class="fa fa-user-o text-primary text-xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-dark">个体对孤立的恐惧</h3> <!-- 标题改为深色 -->
+            </div>
+            <p>从心理学角度来看，人类作为社会性动物，"不被孤立"是引发其社会行为的强烈动力之一。个体往往会因害怕孤立而改变自身行动。</p>
+            <div class="mt-4 bg-secondary/20 p-4 rounded-lg">
+              <p class="text-sm text-gray-600">例如：在一个紧密的社区邻里环境中，如果大家都遵循某种生活习惯或观念，少数不认同的居民可能因害怕被邻里孤立，而选择表面上遵循这种习惯或观念。</p>
+            </div>
+          </div>
+          
+          <!-- 基本假设卡片2 -->
+          <div class="bg-light rounded-2xl p-6 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4 flex-shrink-0">
+                <i class="fa fa-comments text-primary text-xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-dark">意见气候的影响</h3> <!-- 标题改为深色 -->
+            </div>
+            <p>个体所处环境中的意见分布状况，即"意见气候"，包括现有意见以及未来可能出现的意见，会对个体产生影响。</p>
+            <div class="mt-4 bg-secondary/20 p-4 rounded-lg">
+              <p class="text-sm text-gray-600">例如：在互联网时代，网络社区中的讨论氛围就是一种"意见气候"，用户在浏览社交媒体上关于某一热点事件的讨论时，会感受到当前主流的观点倾向。</p>
+            </div>
+          </div>
+          
+          <!-- 基本假设卡片3 -->
+          <div class="bg-light rounded-2xl p-6 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4 flex-shrink-0">
+                <i class="fa fa-bar-chart text-primary text-xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-dark">准感官统计能力</h3> <!-- 标题改为深色 -->
+            </div>
+            <p>每个人都具备"准感官统计"能力，能够据此判断"意见气候"的状况，明确什么样的行为和观点在所处环境中会被认同或不被认同。</p>
+            <div class="mt-4 bg-secondary/20 p-4 rounded-lg">
+              <p class="text-sm text-gray-600">例如：在公司会议上，员工能通过观察同事们的发言和表情，大致判断出大家对某个提案的态度倾向，从而决定自己是否支持该提案。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 理论发展脉络 -->
+    <section id="development" class="mb-20 scroll-mt-24">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 relative inline-block text-white">
+          <span class="relative z-10">三、理论发展脉络</span>
+          <span class="absolute bottom-0 left-0 w-full h-3 bg-primary/30 -z-10 transform -rotate-1"></span>
+        </h2>
+        <p class="text-gray-400 max-w-2xl mx-auto">从传统媒体时代到新媒体时代，理论在不断演变与发展</p>
+      </div>
+      
+      <div class="bg-light rounded-2xl p-6 md:p-8 shadow-xl overflow-hidden text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+        <!-- 交互式时间线 -->
+        <div class="relative">
+          <!-- 时间线标题 -->
+          <div class="flex justify-between items-center mb-8">
+            <h3 class="text-2xl font-bold text-primary">理论发展时间轴</h3>
+            <div class="flex space-x-2">
+              <button id="timeline-prev" class="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center hover:bg-primary transition-colors">
+                <i class="fa fa-chevron-left"></i>
+              </button>
+              <button id="timeline-next" class="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center hover:bg-primary transition-colors">
+                <i class="fa fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- 时间线内容 -->
+          <div class="overflow-x-auto pb-6" id="timeline-container">
+            <div class="flex space-x-8 min-w-max" id="timeline-track">
+              <!-- 时间点1 -->
+              <div class="timeline-point flex-shrink-0 w-64">
+                <div class="bg-light-gray rounded-xl p-5 h-full flex flex-col text-dark-gray"> <!-- 时间点卡片背景改为浅灰色 -->
+                  <div class="text-primary font-bold text-2xl mb-2">1965</div>
+                  <div class="font-bold text-lg mb-2">德国议会选举研究</div>
+                  <p class="text-sm flex-grow">诺埃尔-诺依曼对选举期间数据重新分析，发现人们对获胜方的预估影响投票行为。</p>
+                </div>
+              </div>
+              
+              <!-- 时间点2 -->
+              <div class="timeline-point flex-shrink-0 w-64">
+                <div class="bg-light-gray rounded-xl p-5 h-full flex flex-col text-dark-gray"> <!-- 时间点卡片背景改为浅灰色 -->
+                  <div class="text-primary font-bold text-2xl mb-2">1974</div>
+                  <div class="font-bold text-lg mb-2">概念首次提出</div>
+                  <p class="text-sm flex-grow">诺埃尔-诺依曼在《传播学刊》发表论文，首次提出"沉默的螺旋"概念。</p>
+                </div>
+              </div>
+              
+              <!-- 时间点3 -->
+              <div class="timeline-point flex-shrink-0 w-64">
+                <div class="bg-light-gray rounded-xl p-5 h-full flex flex-col text-dark-gray"> <!-- 时间点卡片背景改为浅灰色 -->
+                  <div class="text-primary font-bold text-2xl mb-2">1980</div>
+                  <div class="font-bold text-lg mb-2">理论系统化</div>
+                  <p class="text-sm flex-grow">出版《沉默的螺旋：舆论——我们的社会皮肤》，对理论进行全面阐述。</p>
+                </div>
+              </div>
+              
+              <!-- 时间点4 -->
+              <div class="timeline-point flex-shrink-0 w-64">
+                <div class="bg-light-gray rounded-xl p-5 h-full flex flex-col text-dark-gray"> <!-- 时间点卡片背景改为浅灰色 -->
+                  <div class="text-primary font-bold text-2xl mb-2">1990s</div>
+                  <div class="font-bold text-lg mb-2">传统媒体时代验证</div>
+                  <p class="text-sm flex-grow">学者通过政治选举、新闻报道等案例研究，验证理论在传统媒体环境下的适用性。</p>
+                </div>
+              </div>
+              
+              <!-- 时间点5 -->
+              <div class="timeline-point flex-shrink-0 w-64">
+                <div class="bg-light-gray rounded-xl p-5 h-full flex flex-col text-dark-gray"> <!-- 时间点卡片背景改为浅灰色 -->
+                  <div class="text-primary font-bold text-2xl mb-2">2000s</div>
+                  <div class="font-bold text-lg mb-2">新媒体时代挑战</div>
+                  <p class="text-sm flex-grow">随着互联网普及，理论在新媒体环境下的适用性受到质疑，出现"反沉默的螺旋"等新现象。</p>
+                </div>
+              </div>
+              
+              <!-- 时间点6 -->
+              <div class="timeline-point flex-shrink-0 w-64">
+                <div class="bg-light-gray rounded-xl p-5 h-full flex flex-col text-dark-gray"> <!-- 时间点卡片背景改为浅灰色 -->
+                  <div class="text-primary font-bold text-2xl mb-2">2010s至今</div>
+                  <div class="font-bold text-lg mb-2">理论扩展与完善</div>
+                  <p class="text-sm flex-grow">研究聚焦于社交媒体、算法推荐等新技术对舆论形成的影响，理论不断扩展与完善。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 发展阶段详情 -->
+        <div class="mt-12 grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 class="text-2xl font-bold mb-4 text-primary">传统媒体时代的发展</h3>
+            <p class="mb-4">在传统媒体占据主导地位的时期，"沉默的螺旋"理论得到广泛关注和进一步研究。学者们通过对各类社会事件、政治选举等传播案例的分析，不断验证和完善该理论。</p>
+            <div class="mt-6">
+              <div class="flex items-start mb-4">
+                <div class="text-primary mr-3 mt-1"><i class="fa fa-check-circle"></i></div>
+                <p>传统媒体对候选人的报道倾向会影响公众对候选人的看法</p>
+              </div>
+              <div class="flex items-start mb-4">
+                <div class="text-primary mr-3 mt-1"><i class="fa fa-check-circle"></i></div>
+                <p>公众感知到自己的意见处于劣势时，可能会选择沉默</p>
+              </div>
+              <div class="flex items-start">
+                <div class="text-primary mr-3 mt-1"><i class="fa fa-check-circle"></i></div>
+                <p>优势意见进一步扩大，形成"沉默的螺旋"效应</p>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h3 class="text-2xl font-bold mb-4 text-primary">新媒体时代的变革</h3>
+            <p class="mb-4">随着新媒体的兴起，信息传播模式发生巨大变化，"沉默的螺旋"理论也面临新的发展和挑战。</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+              <div class="bg-secondary/20 rounded-xl p-4">
+                <h4 class="font-bold mb-2 text-primary">新现象</h4>
+                <ul class="text-sm space-y-2">
+                  <li>反沉默的螺旋</li>
+                  <li>回旋式螺旋</li>
+                  <li>漩涡式螺旋</li>
+                </ul>
+              </div>
+              <div class="bg-secondary/20 rounded-xl p-4">
+                <h4 class="font-bold mb-2 text-primary">主要变化</h4>
+                <ul class="text-sm space-y-2">
+                  <li>个体表达成本降低</li>
+                  <li>小众观点更容易传播</li>
+                  <li>舆论形成机制更加复杂</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 理论应用领域 -->
+    <section id="application" class="mb-20 scroll-mt-24">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 relative inline-block text-white">
+          <span class="relative z-10">四、理论应用领域</span>
+          <span class="absolute bottom-0 left-0 w-full h-3 bg-primary/30 -z-10 transform -rotate-1"></span>
+        </h2>
+        <p class="text-gray-400 max-w-2xl mx-auto">该理论在多个领域具有广泛的应用价值</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- 应用领域1 -->
+        <div class="bg-light rounded-2xl p-6 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+          <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+            <i class="fa fa-university text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 text-dark">政治学领域</h3> <!-- 标题改为深色 -->
+          <p class="text-gray-600 mb-4">在政治选举中，竞选团队常利用"沉默的螺旋"理论来营造有利的舆论氛围。</p>
+          <button class="application-expand w-full py-2 text-primary border border-primary/30 rounded-lg hover:bg-primary/10 transition-colors" data-target="politics-details">
+            了解更多 <i class="fa fa-chevron-down ml-1"></i>
+          </button>
+          <div class="application-details hidden mt-4" id="politics-details">
+            <p class="text-sm text-gray-600 mb-3">通过投放竞选广告、举办竞选活动等方式，借助传统媒体和新媒体平台，广泛传播自身的政治主张和优势。</p>
+            <p class="text-sm text-gray-600">例如，在一些国家的总统选举中，竞选团队会通过民意调查数据的公布，向公众传达自己处于领先地位的信息。</p>
+          </div>
+        </div>
+        
+        <!-- 应用领域2 -->
+        <div class="bg-light rounded-2xl p-6 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+          <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+            <i class="fa fa-newspaper-o text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 text-dark">大众传播学领域</h3> <!-- 标题改为深色 -->
+          <p class="text-gray-600 mb-4">媒体在传播信息时，会考虑"沉默的螺旋"效应，影响公众舆论走向。</p>
+          <button class="application-expand w-full py-2 text-primary border border-primary/30 rounded-lg hover:bg-primary/10 transition-colors" data-target="media-details">
+            了解更多 <i class="fa fa-chevron-down ml-1"></i>
+          </button>
+          <div class="application-details hidden mt-4" id="media-details">
+            <p class="text-sm text-gray-600 mb-3">对于一些有争议的话题，媒体的报道倾向会影响公众舆论走向。</p>
+            <p class="text-sm text-gray-600">例如，媒体对某一社会热点事件的报道角度、篇幅以及采访对象的选择等，都会向公众传达一种"意见气候"。</p>
+          </div>
+        </div>
+        
+        <!-- 应用领域3 -->
+        <div class="bg-light rounded-2xl p-6 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+          <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+            <i class="fa fa-shopping-cart text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 text-dark">市场营销领域</h3> <!-- 标题改为深色 -->
+          <p class="text-gray-600 mb-4">企业在产品推广和品牌建设中运用"沉默的螺旋"理论，影响消费者意见。</p>
+          <button class="application-expand w-full py-2 text-primary border border-primary/30 rounded-lg hover:bg-primary/10 transition-colors" data-target="marketing-details">
+            了解更多 <i class="fa fa-chevron-down ml-1"></i>
+          </button>
+          <div class="application-details hidden mt-4" id="marketing-details">
+            <p class="text-sm text-gray-600 mb-3">通过大规模的广告宣传，让消费者觉得该产品被广泛使用和认可，是市场上的主流选择。</p>
+            <p class="text-sm text-gray-600">例如，在智能手机市场，一些知名品牌通过大量投放广告，展示产品的销量数据、用户好评等信息。</p>
+          </div>
+        </div>
+        
+        <!-- 应用领域4 -->
+        <div class="bg-light rounded-2xl p-6 shadow-xl card-hover text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+          <div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+            <i class="fa fa-users text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 text-dark">社会心理学领域</h3> <!-- 标题改为深色 -->
+          <p class="text-gray-600 mb-4">该理论有助于解释个体在群体中的行为和态度变化。</p>
+          <button class="application-expand w-full py-2 text-primary border border-primary/30 rounded-lg hover:bg-primary/10 transition-colors" data-target="psychology-details">
+            了解更多 <i class="fa fa-chevron-down ml-1"></i>
+          </button>
+          <div class="application-details hidden mt-4" id="psychology-details">
+            <p class="text-sm text-gray-600 mb-3">在社会群体中，个体往往会根据群体的意见和态度来调整自己的行为，以避免被孤立。</p>
+            <p class="text-sm text-gray-600">例如，在学校社团活动中，少数持不同意见的成员可能会因害怕被排斥，而放弃表达自己的真实想法。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 相关研究与实证 -->
+    <section id="research" class="mb-20 scroll-mt-24">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 relative inline-block text-white">
+          <span class="relative z-10">五、相关研究与实证</span>
+          <span class="absolute bottom-0 left-0 w-full h-3 bg-primary/30 -z-10 transform -rotate-1"></span>
+        </h2>
+        <p class="text-gray-400 max-w-2xl mx-auto">众多学者通过不同研究方法对该理论展开实证研究</p>
+      </div>
+      
+      <div class="bg-light rounded-2xl p-6 md:p-8 shadow-xl text-dark-gray"> <!-- 卡片背景改为灰白色 -->
+        <div class="grid md:grid-cols-3 gap-6">
+          <!-- 研究方法1 -->
+          <div class="bg-light-gray rounded-xl p-5 card-hover"> <!-- 卡片背景改为浅灰色 -->
+            <div class="text-primary text-3xl mb-3"><i class="fa fa-bar-chart"></i></div>
+            <h3 class="text-xl font-bold mb-3 text-dark">案例分析法</h3> <!-- 标题改为深色 -->
+            <p class="text-gray-600 mb-3">通过对各类社会事件、政治选举等传播案例的分析，验证和完善理论。</p>
+            <div class="text-sm text-gray-600">
+              <p class="mb-2"><span class="font-bold">举例：</span>对德国议会选举、美国政治竞选活动的研究</p>
+              <p><span class="font-bold">结论：</span>媒体报道倾向与公众意见转变存在关联</p>
+            </div>
+          </div>
+          
+          <!-- 研究方法2 -->
+          <div class="bg-light-gray rounded-xl p-5 card-hover"> <!-- 卡片背景改为浅灰色 -->
+            <div class="text-primary text-3xl mb-3"><i class="fa fa-comments"></i></div>
+            <h3 class="text-xl font-bold mb-3 text-dark">社交媒体研究</h3> <!-- 标题改为深色 -->
+            <p class="text-gray-600 mb-3">在新媒体环境下，通过对社交媒体平台上的话题讨论进行研究。</p>
+            <div class="text-sm text-gray-600">
+              <p class="mb-2"><span class="font-bold">研究方式：</span>分析用户评论、点赞、转发等行为数据</p>
+              <p><span class="font-bold">发现：</span>优势意见获得更多支持，反对声音逐渐微弱</p>
+            </div>
+          </div>
+          
+          <!-- 研究方法3 -->
+          <div class="bg-light-gray rounded-xl p-5 card-hover"> <!-- 卡片背景改为浅灰色 -->
+            <div class="text-primary text-3xl mb-3"><i class="fa fa-flask"></i></div>
+            <h3 class="text-xl font-bold mb-3 text-dark">实验研究</h3> <!-- 标题改为深色 -->
+            <p class="text-gray-600 mb-3">设置不同的讨论情境，让参与者在模拟的群体环境中表达对某一问题的看法。</p>
+            <div class="text-sm text-gray-600">
+              <p class="mb-2"><span class="font-bold">实验设计：</span>预先设置多数人支持某种观点，观察参与者反应</p>
+              <p><span class="font-bold">结果：</span>个体在感知意见不同时，会出现沉默或改变观点</p>
+            </div>
+          </div>
+        </div>
+        
+       
