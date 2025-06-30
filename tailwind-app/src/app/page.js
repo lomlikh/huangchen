@@ -1,70 +1,67 @@
-"use client"; // 添加这行指令
+import Navbar from "@/components/Navbar";
+import ExerciseCard from "@/components/ExerciseCard"; // 导入练习卡片组件
+import exercises from "@/data/exercises.json"; // 从 JSON 文件导入练习数据
 
-import Navbar from "./components/Navbar";
-import ExerciseCard from "./components/ExerciseCard";
-import exercises from "./data/exercises.json";
-import React, { useState } from "react"; // 确保 React 和 useState 被导入
+// 示例练习数据
+// const exercises = [
+//   {
+//     id: 1,
+//     title: "HTML 基础结构练习",
+//     description: "学习并实践HTML5的基本文档结构，包括头部、主体和常用标签。",
+//     imageUrl: "https://images.unsplash.com/photo-1600695268275-1a6468700bd5", // 关键词: html, web
+//     link: "/exercises/html-basics", // 假设的练习链接
+//     tags: ["HTML", "基础"],
+//   },
+//   {
+//     id: 2,
+//     title: "CSS 盒模型与布局",
+//     description: "深入理解CSS盒模型，并使用Flexbox和Grid进行响应式页面布局。",
+//     imageUrl: "https://source.unsplash.com/random/600x400?css,layout", // 关键词: css, layout
+//     link: "/exercises/css-layout",
+//     tags: ["CSS", "Flexbox", "Grid", "响应式"],
+//   },
+//   {
+//     id: 3,
+//     title: "JavaScript DOM 操作",
+//     description: "通过JavaScript动态操作DOM元素，实现交互式网页功能。",
+//     imageUrl: "https://source.unsplash.com/random/600x400?javascript,dom", // 关键词: javascript, dom
+//     link: "/exercises/js-dom",
+//     tags: ["JavaScript", "DOM", "交互"],
+//   },
+//   {
+//     id: 4,
+//     title: "React 组件化开发",
+//     description: "学习使用React构建可复用的UI组件，理解状态和属性。",
+//     imageUrl: "https://source.unsplash.com/random/600x400?react,components", // 关键词: react, components
+//     // link: "/exercises/react-components", // 示例：无链接
+//     tags: ["React", "组件", "SPA"],
+//   },
+// ];
 
 export default function Home() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  // 搜索GitHub仓库
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!query) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`https://api.github.com/search/repositories?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      setResults(data.items || []);
-    } catch (err) {
-      console.error("Failed to fetch GitHub repositories:", err); // 添加错误处理
-      setResults([]);
-    }
-    setLoading(false);
-  };
-
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">
-            《Web前端开发》课程练习
+      <main className="flex-grow container mx-auto px-4 py-12">
+        <header className="text-center mb-16">
+          <h1 className="text-5xl font-extrabold text-slate-800 mb-4 tracking-tight">
+            《Web前端设计》个人网页
           </h1>
-          <p className="text-lg text-slate-600">
-            欢迎来到课程练习展示平台，这里汇集了各个阶段的学习成果。
+          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+            欢迎来到黄晨博寀的课程练习展示平台ღ( ´･ᴗ･` )`
           </p>
         </header>
-        {/* 搜索表单 */}
-        <form className="mb-8 flex gap-4" onSubmit={handleSearch}>
-          <input
-            type="text"
-            placeholder="搜索GitHub仓库..."
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-          />
-          <button
-            type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:scale-105 hover:bg-blue-700 transition-all duration-200"
-          >
-            搜索
-          </button>
-        </form>
-        {/* 搜索结果或本地练习卡片 */}
-        {loading && <div className="text-center text-gray-500">正在搜索...</div>}
+
+        {/* 练习卡片网格 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {(results.length > 0 ? results : exercises).map((item) => (
+          {exercises.map((exercise) => (
             <ExerciseCard
-              key={item.id || item.full_name} // 使用 item.full_name 作为 GitHub repo 的 key
-              title={item.title || item.full_name}
-              description={item.description}
-              imageUrl={item.imageUrl || (item.owner && item.owner.avatar_url)}
-              link={item.link || item.html_url}
-              tags={item.tags || item.topics || []}
+              key={exercise.id}
+              title={exercise.title}
+              description={exercise.description}
+              imageUrl={exercise.imageUrl}
+              link={exercise.link}
+              tags={exercise.tags}
             />
           ))}
         </div>
