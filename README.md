@@ -8,7 +8,7 @@
 
 ![课程作业运行截图](./CUTTING/1.jpg)
 
-## ✨ 功能特性 
+## ✨ 功能特性
 
 - **全面的课程练习展示**：系统化地集成了从HTML基础到JavaScript高级应用的全部课程作业。
 - **现代化技术栈**：采用 Next.js、React 和 Tailwind CSS，保证了项目的高性能和开发效率。
@@ -38,12 +38,10 @@
 
 我们在 `src/app/layout.js` 中为 QAnything 聊天机器人创建了一个侧边栏容器，并通过一个独立的组件来处理与 QAnything API 的交互。该组件负责发送用户输入、接收和展示机器人的回复。
 
-**QAnything 运行截图**
-
 
 ![课程作业运行截图](./CUTTING/2.jpg)
 
-##📊 WakaTime API 集成
+## 📊 WakaTime API 集成
 
 为了动态展示个人的编码活动，项目集成了 WakaTime API。通过该 API，我们可以获取总编码时长等统计数据，并将其展示在页脚。
 
