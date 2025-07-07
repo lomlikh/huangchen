@@ -15,7 +15,7 @@
     "title": "CSS 盒模型与布局",
     "description": "深入理解CSS盒模型，并使用Flexbox和Grid进行响应式页面布局。",
     "imageUrl": "https://picsum.photos/seed/design/600/400",
-    "link": "/exercises/css-layout",
+    "link": "/04-css-02.html",
     "tags": [
       "CSS",
       "Flexbox",

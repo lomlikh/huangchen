@@ -2,47 +2,45 @@
 
 本项目是《Web前端设计》课程的个人项目，旨在展示通过 Next.js 和 Tailwind CSS 构建的现代化、响应式的 Web 应用。项目整合了课程中的各项练习，并集成了 QAnything 和 WakaTime API，以提供更丰富的功能和数据展示。
 
-![项目截图](/1.png)
+## 项目简介
 
-## ✨ 功能特性
+该项目是一个个人作品集和课程练习的展示平台。它不仅包括了 HTML、CSS、JavaScript 等基础练习，还展示了使用 React 和 Next.js 进行组件化开发的成果。项目整体设计简洁、现代，注重用户体验和代码质量。
 
-- **响应式设计**：使用 Tailwind CSS 构建，完美适配桌面和移动设备。
-- **组件化开发**：基于 React 和 Next.js，将 UI 拆分为可复用的组件。
-- **旧作业集成**：通过 JSON 文件和动态组件，优雅地展示过往的课程练习。
-- **QAnything 集成**：通过 API 调用，在页面侧边栏实现了一个智能聊天机器人。
-- **WakaTime API 集成**：在页脚动态展示个人 WakaTime 编码时长统计。
+![课程作业运行截图](./CUTTING/1.png)
 
-## 🛠️ 技术栈
+## QAnything 集成
 
-- **前端框架**：[Next.js](https://nextjs.org/)
-- **UI 框架**：[React](https://react.dev/)
-- **CSS 框架**：[Tailwind CSS](https://tailwindcss.com/)
-- **API 集成**：QAnything, WakaTime
-- **部署平台**：[Vercel](https://vercel.com/) (推荐)
+### 集成路径选择
 
-## 🚀 运行指南
+考虑到项目的静态化特性和 Next.js 的强大功能，我们选择通过**API调用**的方式集成 QAnything，而不是直接嵌入 HTML 页面。具体原因如下：
 
-1.  **克隆项目**
+*   **前后端分离**：API 调用方式更符合现代 Web 开发的前后端分离思想，使前端专注于 UI/UX，后端专注于业务逻辑。
+*   **灵活性与可扩展性**：通过 API，我们可以更灵活地处理和展示 QAnything 返回的数据，例如进行格式化、缓存或与其他数据源结合。
+*   **性能优化**：Next.js 的服务端渲染（SSR）和静态站点生成（SSG）可以与 API 调用良好结合，在构建时或请求时获取数据，从而优化页面加载性能。
 
-    ```bash
-    git clone <your-repository-url>
-    cd tailwind-app
-    ```
+### 实现细节
 
-2.  **安装依赖**
+我们在 `src/app/layout.js` 中为 QAnything 聊天机器人创建了一个侧边栏容器，并通过一个独立的组件来处理与 QAnything API 的交互。该组件负责发送用户输入、接收和展示机器人的回复。
 
-    ```bash
-    npm install
-    ```
+**QAnything 运行截图**
 
-3.  **运行开发服务器**
 
-    ```bash
-    npm run dev
-    ```
+![课程作业运行截图](./CUTTING/2.png)
 
-    打开 [http://localhost:3000](http://localhost:3000) 查看效果。
+## WakaTime API 集成
 
-## 📂 项目结构
+为了动态展示个人的编码活动，项目集成了 WakaTime API。通过该 API，我们可以获取总编码时长等统计数据，并将其展示在页脚。
 
-项目采用 Next.js 的 App Router 模式，主要文件结构如下：
+### 实现方法
+
+1.  **创建 Cloudflare Worker**：为了安全地在前端调用 WakaTime API（避免暴露 API Key），我们创建了一个 Cloudflare Worker 作为代理。该 Worker 负责接收前端请求，然后携带 API Key 向 WakaTime API 发送请求，并将结果返回给前端。
+2.  **前端组件**：在 `src/components/Footer.js` 组件中，我们使用 `useEffect` Hook 在组件加载时异步请求 Cloudflare Worker，获取编码时长数据，并使用 `useState` Hook 更新到界面上。
+
+**WakaTime API 集成与展示截图**
+
+
+![课程作业运行截图](./CUTTING/3.png)
+
+## Next.js 项目结构
+
+项目采用 Next.js 的 App Router 模式，结构清晰、易于维护。
