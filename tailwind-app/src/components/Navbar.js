@@ -19,7 +19,7 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <Link href="/github-stats" className="text-slate-600 font-medium hover:text-rose-600 transition-colors pb-1 border-b-2 border-transparent hover:border-rose-600">
+            <Link href="/07-async练习.html" className="text-slate-600 font-medium hover:text-rose-600 transition-colors pb-1 border-b-2 border-transparent hover:border-rose-600">
               GitHub 统计
             </Link>
           </li>
