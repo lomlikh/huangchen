@@ -39,7 +39,7 @@
 **WakaTime API 集成与展示截图**
 
 
-![课程作业运行截图](./CUTTING/3.png)
+![课程作业运行截图](./CUTTING/3.jpg)
 
 ## Next.js 项目结构
 
