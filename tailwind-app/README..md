@@ -6,7 +6,7 @@
 
 该项目是一个个人作品集和课程练习的展示平台。它不仅包括了 HTML、CSS、JavaScript 等基础练习，还展示了使用 React 和 Next.js 进行组件化开发的成果。项目整体设计简洁、现代，注重用户体验和代码质量。
 
-![课程作业运行截图](./CUTTING/1.png)
+![课程作业运行截图](./CUTTING/1.jpg)
 
 ## QAnything 集成
 
@@ -25,7 +25,7 @@
 **QAnything 运行截图**
 
 
-![课程作业运行截图](./CUTTING/2.png)
+![课程作业运行截图](./CUTTING/2.jpg)
 
 ## WakaTime API 集成
 
